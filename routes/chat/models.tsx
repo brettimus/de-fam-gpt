@@ -1,4 +1,4 @@
-// routes/chat.tsx
+// routes/chat/index.tsx
 import { config as configureEnv } from "https://deno.land/x/dotenv@v3.2.2/mod.ts";
 import {
   Configuration,
@@ -113,7 +113,6 @@ export default function Page({ data }: PageProps<FamModelsResponse | null>) {
         </div>
       </form>
       <div className="mt-4 p-4 border border-gray-300 rounded-md">
-        <h2>Response</h2>
         <ul>
           {results.map((model) => (
             <li key={model.id}>{model.id}</li>
