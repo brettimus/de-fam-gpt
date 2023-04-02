@@ -5,8 +5,8 @@ import {
   OpenAIApi,
   ListModelsResponse,
   Model,
-} from "npm:openai@3.2.1";
-import classNames from "npm:classnames";
+} from "https://esm.sh/openai@3.2.1";
+import classNames from "https://esm.sh/classnames@2.3.2";
 
 import { Handlers, PageProps } from "$fresh/server.ts";
 
