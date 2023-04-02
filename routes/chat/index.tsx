@@ -97,7 +97,7 @@ export default function Page({ data }: PageProps<FamModelsResponse | null>) {
         </div>
       </form>
       {data && data.answer && (
-        <div className="mt-4 p-4 border border-gray-300 rounded-md">
+        <div className="mt-4 p-4 border border-gray-300 rounded-md whitespace-pre-line">
           {data.answer}
         </div>
       )}
