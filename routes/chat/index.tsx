@@ -3,12 +3,13 @@ import { config as configureEnv } from "https://deno.land/x/dotenv@v3.2.2/mod.ts
 import {
   Configuration,
   OpenAIApi,
-  ListModelsResponse,
+  CreateChatCompletionResponse,
+  CreateChatCompletionResponseChoicesInner,
   Model,
 } from "https://esm.sh/openai@3.2.1";
 import classNames from "https://esm.sh/classnames@2.3.2";
 
-import { Handlers, PageProps } from "$fresh/server.ts";
+import { Handlers, PageProps, Request } from "$fresh/server.ts";
 
 let OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 let OPENAI_ORGANIZATION = Deno.env.get("OPENAI_ORGANIZATION");
@@ -28,30 +29,36 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-type FamModelsResponse = { query: string; results: ListModelsResponse["data"] };
+type FamModelsResponse = {
+  query: string;
+  answer: string;
+};
 
 export const handler: Handlers<FamModelsResponse | null> = {
-  async GET(req, ctx) {
-    // EXAMPLE: Get request params
-    // const { username } = ctx.params;
-    const response = await openai.listModels();
+  async POST(req, ctx) {
+    const requestFormData = await req.formData();
+    const query = requestFormData.get("query") as string;
 
-    const url = new URL(req.url);
-    const query = url.searchParams.get("query") || "";
+    const response = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant for the Beutell family.",
+        },
+        { role: "user", content: query },
+      ],
+    });
 
-    // EXAMPLE: Handle non-200 responses
     if (response.status !== 200) {
       return ctx.render(null);
     }
 
-    // EXAMPLE: If you're using fetch to get data
-    // const user: User = await resp.json();
+    const answer =
+      response.data.choices?.[0]?.message?.content ??
+      "NO RESPONSE - Possible error";
 
-    const results = response.data.data.filter((model) =>
-      model.id.toLowerCase().includes(query.toLowerCase())
-    );
-
-    return ctx.render({ results, query });
+    return ctx.render({ answer, query });
   },
 };
 
@@ -90,42 +97,28 @@ const buttonClasses = classNames(
 );
 
 export default function Page({ data }: PageProps<FamModelsResponse | null>) {
-  if (!data) {
-    return <h1>Models not found</h1>;
-  }
-
-  const { results, query } = data;
-
   return (
     <div className="max-w-md mx-auto mt-32 p-4 bg-white rounded-md shadow-md">
-      <form>
-        <label
-          className="block text-gray-700 text-sm font-bold mb-2"
-          htmlFor="query"
-        >
-          Look for a model:
-        </label>
+      <form method="POST">
         <div className="mb-4 flex">
           <input
             className={inputClasses}
             id="query"
             name="query"
             type="text"
-            placeholder="Enter text here"
-            value={query}
+            placeholder="Ask something here"
+            value={data?.query ?? ""}
           />
           <button className={buttonClasses} type="submit">
-            Search
+            🔎
           </button>
         </div>
       </form>
-      <div className="mt-4 p-4 border border-gray-300 rounded-md">
-        <ul>
-          {results.map((model) => (
-            <li key={model.id}>{model.id}</li>
-          ))}
-        </ul>
-      </div>
+      {data && data.answer && (
+        <div className="mt-4 p-4 border border-gray-300 rounded-md">
+          {data.answer}
+        </div>
+      )}
     </div>
   );
 }
