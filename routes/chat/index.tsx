@@ -1,33 +1,9 @@
 // routes/chat/index.tsx
-import { config as configureEnv } from "https://deno.land/x/dotenv@v3.2.2/mod.ts";
-import {
-  Configuration,
-  OpenAIApi,
-  CreateChatCompletionResponse,
-  CreateChatCompletionResponseChoicesInner,
-  Model,
-} from "https://esm.sh/openai@3.2.1";
-import classNames from "https://esm.sh/classnames@2.3.2";
+import classNames from "classnames";
+import { useState } from "preact/hooks";
+import { Handlers, PageProps } from "$fresh/server.ts";
 
-import { Handlers, PageProps, Request } from "$fresh/server.ts";
-
-let OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-let OPENAI_ORGANIZATION = Deno.env.get("OPENAI_ORGANIZATION");
-
-if (typeof Deno.readFileSync === "function") {
-  const env = configureEnv({
-    safe: true,
-  });
-  OPENAI_API_KEY = env.OPENAI_API_KEY;
-  OPENAI_ORGANIZATION = env.OPENAI_ORGANIZATION;
-}
-
-const configuration = new Configuration({
-  organization: OPENAI_ORGANIZATION,
-  apiKey: OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
+import openai from "../../communication/openai.ts";
 
 type FamModelsResponse = {
   query: string;
@@ -97,6 +73,7 @@ const buttonClasses = classNames(
 );
 
 export default function Page({ data }: PageProps<FamModelsResponse | null>) {
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="max-w-md mx-auto mt-32 p-4 bg-white rounded-md shadow-md">
       <form method="POST">
@@ -109,7 +86,12 @@ export default function Page({ data }: PageProps<FamModelsResponse | null>) {
             placeholder="Ask something here"
             value={data?.query ?? ""}
           />
-          <button className={buttonClasses} type="submit">
+          <button
+            className={buttonClasses}
+            type="submit"
+            disabled={isLoading}
+            onClick={() => setIsLoading(true)}
+          >
             🔎
           </button>
         </div>

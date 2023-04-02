@@ -1,32 +1,10 @@
 // routes/chat/index.tsx
-import { config as configureEnv } from "https://deno.land/x/dotenv@v3.2.2/mod.ts";
-import {
-  Configuration,
-  OpenAIApi,
-  ListModelsResponse,
-  Model,
-} from "https://esm.sh/openai@3.2.1";
-import classNames from "https://esm.sh/classnames@2.3.2";
+import { ListModelsResponse } from "openai";
+import classNames from "classnames";
 
 import { Handlers, PageProps } from "$fresh/server.ts";
 
-let OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-let OPENAI_ORGANIZATION = Deno.env.get("OPENAI_ORGANIZATION");
-
-if (typeof Deno.readFileSync === "function") {
-  const env = configureEnv({
-    safe: true,
-  });
-  OPENAI_API_KEY = env.OPENAI_API_KEY;
-  OPENAI_ORGANIZATION = env.OPENAI_ORGANIZATION;
-}
-
-const configuration = new Configuration({
-  organization: OPENAI_ORGANIZATION,
-  apiKey: OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
+import openai from "../../communication/openai.ts";
 
 type FamModelsResponse = { query: string; results: ListModelsResponse["data"] };
 
