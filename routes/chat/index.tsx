@@ -10,9 +10,16 @@ import classNames from "https://esm.sh/classnames@2.3.2";
 
 import { Handlers, PageProps } from "$fresh/server.ts";
 
-const { OPENAI_ORGANIZATION, OPENAI_API_KEY } = configureEnv({
-  safe: true,
-});
+let OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+let OPENAI_ORGANIZATION = Deno.env.get("OPENAI_ORGANIZATION");
+
+if (typeof Deno.readFileSync === "function") {
+  const env = configureEnv({
+    safe: true,
+  });
+  OPENAI_API_KEY = env.OPENAI_API_KEY;
+  OPENAI_ORGANIZATION = env.OPENAI_ORGANIZATION;
+}
 
 const configuration = new Configuration({
   organization: OPENAI_ORGANIZATION,
